@@ -608,22 +608,27 @@ class EXP(NeuralNetwork):
         # [64,300]
         # [64,300]
 
-        text_embedding_0 = self.tv_attention(text_embedding_0.view(
-            bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
-        text_embedding_1 = self.tv_attention(text_embedding_1.view(
-            bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
-        text_embedding_2 = self.tv_attention(text_embedding_2.view(
-            bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
-        text_embedding_3 = self.tv_attention(text_embedding_3.view(
-            bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
+        # text_embedding_0 = self.tv_attention(text_embedding_0.view(
+        #     bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
+        # text_embedding_1 = self.tv_attention(text_embedding_1.view(
+        #     bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
+        # text_embedding_2 = self.tv_attention(text_embedding_2.view(
+        #     bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
+        # text_embedding_3 = self.tv_attention(text_embedding_3.view(
+        #     bsz, -1, 300), iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300))
+        text_combined = self.relu(self.fc_tv(torch.cat(
+            (text_embedding_0, text_embedding_1, text_embedding_2, text_embedding_3), dim=1)))
+        text_enhanced = self.tv_attention(text_combined.view(bsz, -1, 300), iembedding.view(bsz, -1, 300), 
+                                          iembedding.view(bsz, -1, 300))
+        
         self_att_i = self.ii_attention(iembedding.view(bsz, -1, 300), iembedding.view(bsz, -1, 300),
                                        iembedding.view(bsz, -1, 300))
         self_att_g = self.gg_attention(rembedding.view(bsz, -1, 300), rembedding.view(bsz, -1, 300),
                                        rembedding.view(bsz, -1, 300))
         # 共享一个注意力模块，图像特征分别增强文本特征
 
-        text_enhanced = self.relu(self.fc_tv(torch.cat(
-            (text_embedding_0, text_embedding_1, text_embedding_2, text_embedding_3), dim=2)))
+        # text_enhanced = self.relu(self.fc_tv(torch.cat(
+        #     (text_embedding_0, text_embedding_1, text_embedding_2, text_embedding_3), dim=2)))
 
         align_text = self.alignfc_t(text_enhanced).view(bsz, 300)
         align_rembedding = self.alignfc_g(self_att_g).view(bsz, 300)
